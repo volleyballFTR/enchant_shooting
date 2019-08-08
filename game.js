@@ -191,7 +191,6 @@ let Player = enchant.Class.create(enchant.Sprite, {
         console.log("Player initialize:end")
     }
 });
-
 //敵を定義する
 let Enemy = enchant.Class.create(enchant.Sprite, {
     //初期設定
