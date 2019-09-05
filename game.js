@@ -11,9 +11,9 @@ window.onload = function () {
     // 2.1 ゲームの初期設定
     game = new Core(320, 320); // ゲームサイズ
     game.fps = 24; // フレーム数/秒
-    game.preload('imomusi.png', 'space2.png', "space3.png", 'space4.png','ito.png', 'icon0.png', 'hinotama.png', 'effect0.png','clear.png'); // 画像のロード
+    game.preload('imomusi.png', 'space2.png', "space3.png", 'space4.png', 'ito.png', 'icon0.png', 'hinotama.png', 'effect0.png', 'clear.png'); // 画像のロード
     game.preload(BackgroundImageTable);
-    game.preload('sounds/nv_01.mp3', 'sounds/failed.mp3', 'sounds/bomb1.wav', 'sounds/shot5.wav','sounds/kuliar.mp3','sounds/Clear4.mp3')
+    game.preload('sounds/nv_01.mp3', 'sounds/failed.mp3', 'sounds/bomb1.wav', 'sounds/shot5.wav', 'sounds/kuliar.mp3', 'sounds/Clear4.mp3')
     score = 0;
     life = 3
     // 2.2 イベント: game.onload（ゲームがロードされる時）
@@ -83,7 +83,7 @@ let Background = enchant.Class.create(enchant.Sprite, { // enchant.Spriteを継�
         this.x = 0; //ｘ座標
         this.y = -320; //y座標
         this.frame = 0; //先頭のフレーム
-        this.currentImageNum=0
+        this.currentImageNum = 0
         this.image = game.assets['yozora.png']; // 画像をこのクラスに設定
         // 3.2 イベント: enterframe(新しいフレームを描画する時)：
         this.addEventListener('enterframe', function () {
@@ -203,12 +203,13 @@ let Enemy = enchant.Class.create(enchant.Sprite, {
         this.tick = 0;
         this.bulletCycle = EnemyTable[type].bulletCycle
         this.hp = EnemyTable[type].hp
+        this.type = type;
         this.image = game.assets[EnemyTable[type].imagefile];
         this.addEventListener('enterframe', function () {
             //画像のフレームを0から3に切り替える
-            this.frame = game.frame % 4;
+            this.frame =EnemyTable[type].frame()
             //y座標を増やす
-            this.y += 3;
+            EnemyTable[type].position(this)
             //画面外に出たら消す
             if (this.y > game.height || this.x > game.width || this.x < -this.width || this.y < -this.height) {
                 //消す
@@ -254,11 +255,10 @@ let PlayerBullet = enchant.Class.create(enchant.Sprite, {
                     }
 
                     let effect = new Explosion(this.x, this.y, 30);
-                    score += 1;
+                    score += EnemyTable[enemies[key].type].score
                     enemies[key].hp -= 1;
                     if (enemies[key].hp <= 0) {
-                        //score += EnemyTable[enemies[key].type].score;
-                        if (score % 6 == 0) {
+                        if (score % 15 == 0) {
                             background.changeImage()
                         }
                     }
@@ -349,15 +349,21 @@ let EnemyTable = {
     0: {
         imagefile: "space2.png",
         bulletCycle: 45,
-        hp: 1
+        hp: 1,
+        score: 1,
+        frame: function () { return game.frame % 4; },
+        position: function (enemy) { enemy.y += 4; }
     },
     1: {
         imagefile: "space3.png",
         bulletCycle: 20,
-        hp: 1
+        hp: 1,
+        score: 3,
+        frame: function () { return game.frame % 4; },
+        position: function (enemy) { enemy.y += 3; }
     },
     2: {
-        imagefile:"space4.png",
+        imagefile: "space4.png",
         bulletCycle: 10,
     },
 }
