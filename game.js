@@ -11,7 +11,7 @@ window.onload = function () {
     // 2.1 ゲームの初期設定
     game = new Core(320, 320); // ゲームサイズ
     game.fps = 24; // フレーム数/秒
-    game.preload('imomusi.png', 'space2.png', "space3.png", 'space4.png', 'ito.png', 'icon0.png', 'hinotama.png', 'effect0.png', 'clear.png'); // 画像のロード
+    game.preload('imomusi.png', 'space2.png', "space3.png", 'space4.png', 'ito.png', 'icon0.png', 'hinotama.png', 'effect0.png', 'clear.png',); // 画像のロード
     game.preload(BackgroundImageTable);
     game.preload('sounds/nv_01.mp3', 'sounds/failed.mp3', 'sounds/bomb1.wav', 'sounds/shot5.wav', 'sounds/kuliar.mp3', 'sounds/Clear4.mp3')
     score = 0;
@@ -57,6 +57,10 @@ window.onload = function () {
                 }
                 if (rand(100) < 1) {
                     let enemy = new Enemy(rand(320 - 32), 0, 32, 32, game.frame, 1)
+                    enemies[game.frame] = enemy;
+                }
+                if (rand(200) < 1 && life < 3) {
+                    let enemy = new Enemy(rand(320 - 32), 0, 16, 16, game.frame, "life_plus");
                     enemies[game.frame] = enemy;
                 }
             }
@@ -147,13 +151,13 @@ let Player = enchant.Class.create(enchant.Sprite, {
             }
             this.vx = this.vy = 0;
             if (game.input.left && player.isLost == false) {
-                this.vx = -6;
+                this.vx = -7;
             } else if (game.input.right && player.isLost == false) {
-                this.vx = 6;
+                this.vx = 7;
             } else if (game.input.up && player.isLost == false) {
-                this.vy = -6;
+                this.vy = -7;
             } else if (game.input.down && player.isLost == false) {
-                this.vy = 6;
+                this.vy = 7;
             }
             this.x += this.vx;
             this.y += this.vy;
@@ -207,7 +211,7 @@ let Enemy = enchant.Class.create(enchant.Sprite, {
         this.image = game.assets[EnemyTable[type].imagefile];
         this.addEventListener('enterframe', function () {
             //画像のフレームを0から3に切り替える
-            this.frame =EnemyTable[type].frame()
+            this.frame = EnemyTable[type].frame()
             //y座標を増やす
             EnemyTable[type].position(this)
             //画面外に出たら消す
@@ -285,6 +289,7 @@ let EnemyBullet = enchant.Class.create(enchant.Sprite, {
         this.x = x;
         this.y = y;
         this.angle = angle;
+        this.rotation = this.angle * -1 * 180 / Math.PI;
         this.speed = 10; //スピード
         this.addEventListener('enterframe', function () {
             this.x += this.speed * Math.sin(this.angle);
@@ -360,10 +365,18 @@ let EnemyTable = {
         hp: 1,
         score: 3,
         frame: function () { return game.frame % 4; },
-        position: function (enemy) { enemy.y += 3; }
+        position: function (enemy) { enemy.y += 2; }
     },
     2: {
         imagefile: "space4.png",
         bulletCycle: 10,
     },
+    life_plus: {
+        hp: 1,
+        imagefile: "icon0.png",
+        frame: function () { return 10},
+        position: function (enemy) { enemy.y += 3; },
+        bulletCycle: null,
+        score: 0
+    }
 }
