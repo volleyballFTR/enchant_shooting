@@ -11,9 +11,9 @@ window.onload = function () {
     // 2.1 ゲームの初期設定
     game = new Core(320, 320); // ゲームサイズ
     game.fps = 24; // フレーム数/秒
-    game.preload('imomusi.png', 'space2.png', "space3.png", 'space4.png', 'ito.png', 'icon0.png', 'hinotama.png', 'effect0.png', 'clear.png',); // 画像のロード
+    game.preload('imomusi.png', 'space2.png', "space3.png", 'space4.png', 'ito.png', 'icon0.png', 'hinotama.png', 'effect0.png', 'clear.png'); // 画像のロード
     game.preload(BackgroundImageTable);
-    game.preload('sounds/nv_01.mp3', 'sounds/failed.mp3', 'sounds/bomb1.wav', 'sounds/shot5.wav', 'sounds/kuliar.mp3', 'sounds/Clear4.mp3')
+    game.preload('sounds/nv_01.mp3', 'sounds/failed.mp3', 'sounds/bomb1.wav', 'sounds/shot5.wav', 'sounds/kuliar.mp3', 'sounds/Clear4.mp3','sounds/powerup05.mp3')
     score = 0;
     life = 3
     // 2.2 イベント: game.onload（ゲームがロードされる時）
@@ -42,6 +42,7 @@ window.onload = function () {
         enemiyDmgSD[3] = game.assets['sounds/failed.mp3'];
         enemiyDmgSD[4] = game.assets['sounds/kuliar.mp3'];
         enemiyDmgSD[5] = game.assets['sounds/Clear4.mp3'];
+        enemiyDmgSD[6] = game.assets['sounds/powerup05.mp3'];
         game.rootScene.addEventListener('enterframe', function () {
             scorelabel.score = score;
             lifeLabel.life = life;
@@ -178,16 +179,23 @@ let Player = enchant.Class.create(enchant.Sprite, {
             }
             for (let i in enemies) {
                 if (enemies[i].intersect(this)) {
-                    effect = new Explosion(player.x, player.y, 30);
-                    if (player.isLost == false) {
-                        life -= 1;
-                        enemiyDmgSD[1].play();
-                    }
-                    if (life == 0) {
-                        enemiyDmgSD[2].stop();
-                        isGameOver = true;
+                    if (enemies[i].type == "life_plus") {
+                        life += 1
+                        enemiyDmgSD[6].play();
+                        enemies[i].remove();
                     }
 
+                    else if (this.isLost == false) {
+                        this.isLost = true
+                        effect = new Explosion(player.x, player.y, 30);
+                        enemies[i].remove();
+                        life -= 1;
+                        if (life == 0) {
+                            enemiyDmgSD[2].stop();
+                            isGameOver = true;
+                        }
+                        enemiyDmgSD[1].play();
+                    }
                 }
             }
         });
@@ -257,8 +265,9 @@ let PlayerBullet = enchant.Class.create(enchant.Sprite, {
                     if (player.isLost == false) {
                         enemiyDmgSD[0].play();
                     }
+                    if (enemies[key].type == "life_plus")return;
 
-                    let effect = new Explosion(this.x, this.y, 30);
+                        let effect = new Explosion(this.x, this.y, 30);
                     score += EnemyTable[enemies[key].type].score
                     enemies[key].hp -= 1;
                     if (enemies[key].hp <= 0) {
@@ -305,6 +314,7 @@ let EnemyBullet = enchant.Class.create(enchant.Sprite, {
                 }
                 player.isLost = true
                 effect = new Explosion(player.x, player.y, 30);
+
                 this.remove();
                 if (life == 0) {
                     isGameOver = true
@@ -353,7 +363,7 @@ let Explosion = enchant.Class.create(enchant.Sprite, {
 let EnemyTable = {
     0: {
         imagefile: "space2.png",
-        bulletCycle: 45,
+        bulletCycle: 50,
         hp: 1,
         score: 1,
         frame: function () { return game.frame % 4; },
@@ -361,7 +371,7 @@ let EnemyTable = {
     },
     1: {
         imagefile: "space3.png",
-        bulletCycle: 20,
+        bulletCycle: 50,
         hp: 1,
         score: 3,
         frame: function () { return game.frame % 4; },
@@ -374,7 +384,7 @@ let EnemyTable = {
     life_plus: {
         hp: 1,
         imagefile: "icon0.png",
-        frame: function () { return 10},
+        frame: function () { return 10 },
         position: function (enemy) { enemy.y += 3; },
         bulletCycle: null,
         score: 0
